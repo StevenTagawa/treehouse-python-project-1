@@ -185,7 +185,7 @@ def sort_players(player_data, rosters):
     number_of_experienced_players = 0
     pick_experienced_players = True
     pick_tallest = True
-    height_difference = 0
+    height = 0
     number_of_teams = len(rosters)
     next_team = 0
     last_team = number_of_teams - 1
@@ -216,14 +216,7 @@ def sort_players(player_data, rosters):
         print("Warning: ", str(extra_experienced_players), "teams will have an additional experienced player.")
         notes += str(extra_experienced_players) + " teams have an additional experienced player.\n"
     # end if
-    
-    # Calculate the average height of all of the children.
-    total_height = 0
-    for player in player_data:
-        total_height += player["Height (inches)"]
-    # end for
-    average_height = int(total_height / len(player_data))
-    
+       
     # Main sorting loop.  The loop begins by searching through the list for the tallest child,
     #  assigning him/her to the first team, and removing him/her from the list.  The loop
     #  continues to assign the tallest children remaining until each team has one player.  The loop
@@ -232,26 +225,29 @@ def sort_players(player_data, rosters):
     
     # Loop until player list is empty.
     while len(player_data) > 0:
-        # re-initialize this variable each time through.
-        height_difference = 0
         # We use enumerate here because we use the index number to track the chosen child.
         for index, player in enumerate(player_data):
+            # Set the first child's height as the default to compare against.
+            if index == 0:
+                height = player["Height (inches)"]
+            # end if
             # The complex if statement below returns True if:  1) the current child is the tallest
             #  encountered so far AND we are picking tall children; OR 2) the current child is the
             #  shortest encountered so far AND we are picking short children.  This allows the
-            #  code inside to be used for picking both tall and short children.  Using >= results
-            #  in the last of multiple children with the same height to be picked first, but this
-            #  has no effect on the distribution, and keeps the function operating correctly when
-            #  a child's height IS the average.
-            if (((player["Height (inches)"] - average_height) >= height_difference) and (pick_tallest == True)) or ((average_height - (player["Height (inches)"]) >= height_difference) and (pick_tallest == False)):
+            #  code inside to be used for picking both tall and short children.  Using >= and <=
+            #  results in the last of multiple children with the same height to be picked first,
+            #  but this has no effect on the distribution, and keeps the function operating
+            #  correctly when all the remaining children are the same height (or there is only one
+            #  child left).
+            if ((player["Height (inches)"] >= height) and (pick_tallest == True)) or ((player["Height (inches)"] <= height) and (pick_tallest == False)):
                 # If we are picking experienced players, the child can be picked only if he/she is
                 #  experienced.
                 if (pick_experienced_players and (player["Soccer Experience"].upper() == "YES")) or (not pick_experienced_players):
                     # Store this player's index as a potential pick.
                     next_pick = index
-                    # Set this player's height differential as the new bar to compare the remaining
-                    #  children against.  Use abs to allow for one equation.
-                    height_difference = abs(player["Height (inches)"] - average_height)
+                    # Set this player's height as the new bar to compare the remaining children
+                    # against.
+                    height = player["Height (inches)"]
                 # end if
             # end if
         # end for
@@ -420,7 +416,9 @@ if __name__ == "__main__":
             
             # Finally, generate the individual player letters.
             generate_player_letters(player_data, rosters)
+        # end if
     # end if
+# end if
 
 # SCRIPT ENDS HERE:
 #--------------------------------------------------------------------------------------------------
