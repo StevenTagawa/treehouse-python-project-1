@@ -15,6 +15,7 @@ OUTPUT_FILE = "teams.txt"
 TEAMS = [["Dragons"], ["Sharks"], ["Raptors"]]
 # The minimum number of players per team for any age group is four (8 and under).  This can be
 #  changed for other age groups.
+VALID_KEYS = ["Name", "Height (inches)", "Soccer Experience", "Guardian Name(s)"]
 MIN_PLAYERS_PER_TEAM = 4
 PRACTICE_DATE_TIME = "Wednesday, September 12, 2018, at 3:30pm"
 
@@ -88,37 +89,60 @@ def list_copy(old_list):
 # check data function
 # Pass:  input data (a list of dictionaries)
 # Return:  True if the data passes all checks, False otherwise
-def valid_data(player_data, keys):
+def valid_data(player_data, keys, VALID_KEYS):
     # Initialize.
     valid = True
+    # The function calls two subfunctions, one which checks to make sure that the key fields in the
+    #  input file matches what is expected, and one which runs validity checks on the data.
     
-    # First, check to make sure the expected keys are there.
-    if not "Name" in keys:
-        print("The input file does not contain player name data.")
-        valid = False
+    # First check the key fields.
+    valid = check_keys(VALID_KEYS, keys)
+    # Only check the data if the keys are valid.
+    if valid:
+        valid = check_data(player_data)
     # end if
-    if not "Height (inches)" in keys:
-        print("The input file does not contain height data.")
-        valid = False
-    # end if
-    if not "Soccer Experience" in keys:
-        print("The input file does not contain experience data.")
-        valid = False
-    # end if
-    if not "Guardian Name(s)" in keys:
-        print("The input file does not contain guardian name data.")
-        valid = False
-    # end if
-    # If any of the keys are not present, skip the rest of the checking.
-    if valid == False:
-        return False
-    # end if (function exits)
+    return valid
+    # end function
+
+
+# check keys function
+# Pass:  a list of expected key fields, the actual key fields from the input file
+# Return:  True if the keys are present
+def check_keys(VALID_KEYS, keys):
+    # Initialize (will be flipped if anything fails).
+    valid = True
+    # Iterate through the expected keys.
+    for valid_key in VALID_KEYS:
+        if not valid_key in keys:
+            print("The input file does not contain expected", valid_key, "data.")
+            valid = False
+        # end if
+    # end for
+    return valid
+    # end function
+
+
+# check data function
+# Pass:  master list of player data
+# Return:  True if the data is valid, False otherwise
+def check_data(player_data):
+    # This function type-checks the actual data.  It would be nice to have the function loop once
+    #  through the player data and check all conditions simultaneously, but since we don't want to
+    #  keep checking after a condition has failed once, it would get complicated having the loop
+    #  check some conditions but not others for some iterations.
     
-    # Now type-check the data itself.  It would be nice to have the function loop once through the
-    #  player data and check all conditions simultaneously, but since we don't want to keep
-    #  checking after a condition has failed once, it would get complicated having the loop check
-    #  some conditions but not others for some iterations.
+    # << The valid_data function was originally one long function combining a project-specific
+    #  version of the check_keys function and this function.  After peer review it was suggested
+    #  that valid_data be broken into two separate functions.  In the process I re-imagined the
+    #  piece of code that specifically checked for the four key names as a generic function that
+    #  can accept any list of key names and check them against the fields in a csv file.  I also
+    #  had ideas about generalizing the code below as a set of functions that would check (and,
+    #  if desired, convert) a particular type--one for ints, one for bools, one for strings, etc.
+    #  But in the interest of moving forward (and since I've tested this code and it works) I opted
+    #  not to go completely insane with the refactoring. >>
     
+    #Initialize.
+    valid = True
     # Since the height data is inputted as strings, convert them to integers.  An error ends
     #  checking.
     for player in player_data:
@@ -143,20 +167,45 @@ def valid_data(player_data, keys):
     # end for
     
     # The script cannot verify that the name fields contain actual names, but it can verify that
-    #  they contain non-empty strings.
+    #  they are:  1) not empty, and 2) not purely numeric.
+    # Loop through the list, checking player names.
     for player in player_data:
+        # Check if it's empty.
         if len(player["Name"]) == 0:
             print("The input file contains invalid player name data.")
             valid = False
             break
         # end if
+        # If it isn't, try to convert it into an int.  The string passes if the attempt DOESN'T
+        # work.
+        try:
+            x = int(player["Name"])
+            print("The input file contains invalid player name data.")
+            valid = False
+            break
+        # If the try block throws an error, the data is good.  Do nothing.
+        except ValueError:
+            pass
+        # end try
     # end for
+    # Do the same for guardian name(s).
     for player in player_data:
         if len(player["Guardian Name(s)"]) == 0:
             print("The input file contains invalid guardian name data.")
             valid = False
             break
         # end if
+        # If it isn't, try to convert it into an int.  The string passes if the attempt DOESN'T
+        # work.
+        try:
+            x = int(player["Guardian Name(s)"])
+            print("The input file contains invalid guardian name data.")
+            valid = False
+            break
+        # If the try block throws an error, the data is good.  Do nothing.
+        except ValueError:
+            pass
+        # end try
     # end for
     # If any of the conditions failed, end checking
     if valid == False:
@@ -398,7 +447,7 @@ if __name__ == "__main__":
         print(msg)
     else:
         # Now check that the data read in is valid.  Rest of the script runs only if True.
-        if valid_data(player_data, key_list):
+        if valid_data(player_data, key_list, VALID_KEYS):
             
             # Make working copies of the player_data list and the TEAMS list for the sort players
             #  function to modify.
