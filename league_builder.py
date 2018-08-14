@@ -264,7 +264,7 @@ def sort_players(player_data, rosters):
         # end if
     # end for
     # If there are no experienced players, flip the pick_experienced_players flag.
-    If number_of_experienced_players == 0:
+    if number_of_experienced_players == 0:
         pick_experienced_players = False
     # end if
     
