@@ -212,12 +212,19 @@ def check_data(player_data):
         return False
     # end if (function exits)
     
-    # Finally, end if there aren't enough children listed to distribute between the number of
+    # End if there aren't enough children listed to distribute between the number of
     #  teams.
     if (len(TEAMS) * MIN_PLAYERS_PER_TEAM) > len(player_data):
         print("There aren't enough children to distribute between the specified number of teams.")
         return False
-    # end if
+    # end if (function exits)
+    
+    # And finally, if the list of teams is empty, report that.
+    if len(TEAMS) == 0:
+        print("There are no teams defined.")
+        return False
+    # end if (function exits)
+    
     # If everything passed, return True.
     return True
     # end function
@@ -256,6 +263,10 @@ def sort_players(player_data, rosters):
             number_of_experienced_players += 1
         # end if
     # end for
+    # If there are no experienced players, flip the pick_experienced_players flag.
+    If number_of_experienced_players == 0:
+        pick_experienced_players = False
+    # end if
     
     # If the number of experienced players will not divide evenly between the teams, generate a
     #  warning.
